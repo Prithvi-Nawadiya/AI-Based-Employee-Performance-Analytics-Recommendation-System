@@ -7,7 +7,8 @@ const { AppError } = require('../middleware/errorHandler');
  * Call OpenRouter API with a given prompt
  */
 const callOpenRouter = async (prompt) => {
-  const response = await fetch(`${process.env.OPENROUTER_BASE_URL}/chat/completions`, {
+  const baseUrl = process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1';
+  const response = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
