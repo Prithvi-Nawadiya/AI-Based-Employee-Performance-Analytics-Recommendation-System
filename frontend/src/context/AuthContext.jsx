@@ -10,16 +10,32 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Restore session from localStorage
-    const storedUser = localStorage.getItem('user');
-    const storedToken = localStorage.getItem('token');
-    if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser));
+    try {
+      const storedUser = localStorage.getItem('user');
+      const storedToken = localStorage.getItem('token');
+      if (storedUser && storedUser !== 'undefined' && storedToken && storedToken !== 'undefined') {
+        setUser(JSON.parse(storedUser));
+      } else {
+        // Clear invalid session data if present
+        if (storedUser === 'undefined' || storedToken === 'undefined') {
+          localStorage.removeItem('user');
+          localStorage.removeItem('token');
+        }
+      }
+    } catch (e) {
+      console.error("Failed to parse stored user", e);
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   const login = async (email, password) => {
     const { data } = await api.post('/auth/login', { email, password });
+    if (!data || !data.token) {
+      throw new Error("Invalid response from server. Check API connection.");
+    }
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
     setUser(data.user);
